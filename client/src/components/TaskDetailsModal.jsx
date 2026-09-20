@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -14,20 +13,19 @@ import {
 } from "@mui/material";
 import {
   AccessTime,
-  CalendarMonth,
   Close,
-  Person,
-  Flag,
-  Update,
   Edit,
   Delete,
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { deleteTask } from "../services/taskService";
 import TaskActivity from "./TaskActivity";
+import TaskTimeline from "./TaskTimeline";
+import TaskPeople from "./TaskPeople";
+import TaskStatus from "./TaskStatus";
+import TaskDescription from "./TaskDescription";
 
 function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
-  console.log("DETAIL MODAL TASK:", task);
   const theme = useTheme();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
@@ -180,288 +178,25 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
           {task ? (
             <Stack spacing={3}>
               {/* Description */}
-              <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1,
-                  }}
-                >
-                  Description
-                </Typography>
-
-                <Box
-                  sx={{
-                    p: 2,
-                    backgroundColor: "#FFFFFF",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color={task.description ? "text.primary" : "text.secondary"}
-                    sx={{ lineHeight: 1.7 }}
-                  >
-                    {task.description || "No description provided."}
-                  </Typography>
-                </Box>
-              </Box>
+             <TaskDescription task={task} />
 
               {/* Status + Priority */}
-              <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1.5,
-                  }}
-                >
-                  Current Status
-                </Typography>
-
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      Status
-                    </Typography>
-
-                    <Box sx={{ mt: 1 }}>
-                      <Chip
-                        label={statusLabels[task.status]}
-                        size="small"
-                        sx={{
-                          backgroundColor: statusColors[task.status],
-                          color: "#FFFFFF",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      flex: 1,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary">
-                      Priority
-                    </Typography>
-
-                    <Box sx={{ mt: 1 }}>
-                      <Chip
-                        icon={
-                          <Flag
-                            sx={{
-                              color: "#FFFFFF !important",
-                              fontSize: 16,
-                            }}
-                          />
-                        }
-                        label={priorityLabels[task.priority]}
-                        size="small"
-                        sx={{
-                          backgroundColor: priorityColors[task.priority],
-                          color: "#FFFFFF",
-                          fontWeight: 600,
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                </Stack>
-              </Box>
+             <TaskStatus
+              task={task}
+              statusColors={statusColors}
+              statusLabels={statusLabels}
+              priorityColors={priorityColors}
+              priorityLabels={priorityLabels}
+            />
 
               <Divider />
 
               {/* People */}
-              <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1.5,
-                  }}
-                >
-                  People
-                </Typography>
-
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "primary.main",
-                        color: "#FFFFFF",
-                      }}
-                    >
-                      <Person fontSize="small" />
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Assigned To
-                      </Typography>
-
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {task.assignedTo?.name || "Unknown"}
-                      </Typography>
-
-                      {task.assignedTo?.email && (
-                        <Typography variant="caption" color="text.secondary">
-                          {task.assignedTo.email}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: "50%",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "secondary.main",
-                        color: "#FFFFFF",
-                      }}
-                    >
-                      <Person fontSize="small" />
-                    </Box>
-
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Created By
-                      </Typography>
-
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {task.createdBy?.name || "Unknown"}
-                      </Typography>
-
-                      {task.createdBy?.email && (
-                        <Typography variant="caption" color="text.secondary">
-                          {task.createdBy.email}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Box>
-                </Stack>
-              </Box>
+             <TaskPeople task={task} />
 
               <Divider />
 
-              {/* Dates */}
-              <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1.5,
-                  }}
-                >
-                  Timeline
-                </Typography>
-
-                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <CalendarMonth sx={{ color: "text.secondary" }} />
-
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Created
-                      </Typography>
-
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatDate(task.createdAt)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1.5,
-                      p: 2,
-                      backgroundColor: "#FFFFFF",
-                      border: "1px solid",
-                      borderColor: "divider",
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Update sx={{ color: "text.secondary" }} />
-
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Last Updated
-                      </Typography>
-
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {formatDate(task.updatedAt)}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Stack>
-              </Box>
+              <TaskTimeline task={task} formatDate={formatDate} />
 
               <TaskActivity open={open} task={task} />
             </Stack>

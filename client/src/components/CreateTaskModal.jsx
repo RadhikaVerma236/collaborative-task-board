@@ -88,6 +88,8 @@ if (task) {
   response = await createTask(formData);
 }
 
+console.log("UPDATED TASK RESPONSE:", response.data.task);
+
   alert(
   task
     ? "Task updated successfully!"

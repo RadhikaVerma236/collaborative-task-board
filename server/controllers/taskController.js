@@ -91,6 +91,17 @@ const updateTask = async (req, res) => {
 
     await task.save();
 
+    await task.populate([
+      {
+        path: "assignedTo",
+        select: "name email",
+      },
+      {
+        path: "createdBy",
+        select: "name email",
+      },
+    ]);
+
     // Create activity log
     await ActivityLog.create({
       action: "Task updated",
@@ -132,22 +143,22 @@ const updateTaskStatus = async (req, res) => {
 
     const oldStatus = task.status;
 
-        task.status = status;
+    task.status = status;
 
-        await task.save();
+    await task.save();
 
-        // Create activity log
-        await ActivityLog.create({
-        action: `Status changed from ${oldStatus} to ${status}`,
-        task: task._id,
-        user: req.user.id,
-        });
+    // Create activity log
+    await ActivityLog.create({
+      action: `Status changed from ${oldStatus} to ${status}`,
+      task: task._id,
+      user: req.user.id,
+    });
 
-        const io = req.app.get("io");
+    const io = req.app.get("io");
 
-        console.log("🔥 EMITTING SOCKET EVENT");
+    console.log("🔥 EMITTING SOCKET EVENT");
 
-        io.emit("taskUpdated", task);
+    io.emit("taskUpdated", task);
 
     res.json({
       success: true,
