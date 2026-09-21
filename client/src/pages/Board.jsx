@@ -8,12 +8,17 @@ import Navbar from "../components/Navbar";
 import TaskColumn from "../components/TaskColumn";
 import CreateTaskModal from "../components/CreateTaskModal";
 import { getTasks, updateTaskStatus } from "../services/taskService";
+import TaskFilters from "../components/TaskFilters";
 
 function Board() {
   const [tasks, setTasks] = useState([]);
   const [toastMessage, setToastMessage] = useState("");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [priorityFilter, setPriorityFilter] = useState("all");
+  const [assignedFilter, setAssignedFilter] = useState("all");
 
   const fetchTasks = async () => {
     try {
@@ -93,17 +98,68 @@ function Board() {
     setCreateModalOpen(true);
   };
 
-  const todoTasks = tasks.filter((task) => task.status === "todo");
-
-  const inProgressTasks = tasks.filter((task) => task.status === "in-progress");
-
-  const completedTasks = tasks.filter((task) => task.status === "completed");
-
   const handleTaskDeleted = (taskId) => {
     setTasks((currentTasks) =>
       currentTasks.filter((task) => task._id !== taskId),
     );
   };
+
+  const filteredTasks = tasks.filter((task) => {
+    const search = searchText.toLowerCase();
+
+    const matchesSearch =
+      task.title?.toLowerCase().includes(search) ||
+      task.description?.toLowerCase().includes(search);
+
+    const matchesStatus =
+      statusFilter === "all" || task.status === statusFilter;
+
+    const matchesPriority =
+      priorityFilter === "all" || task.priority === priorityFilter;
+
+    const assignedUserId =
+      typeof task.assignedTo === "object"
+        ? task.assignedTo?._id
+        : task.assignedTo;
+
+    const matchesAssigned =
+      assignedFilter === "all" || assignedUserId === assignedFilter;
+
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssigned;
+  });
+
+  const assignedUsers = tasks
+    .map((task) => task.assignedTo)
+    .filter(Boolean)
+    .filter(
+      (user, index, array) =>
+        array.findIndex(
+          (item) => (item?._id || item) === (user?._id || user),
+        ) === index,
+    );
+
+  const todoTasks = filteredTasks.filter((task) => task.status === "todo");
+
+  const inProgressTasks = filteredTasks.filter(
+    (task) => task.status === "in-progress",
+  );
+
+  const completedTasks = filteredTasks.filter(
+    (task) => task.status === "completed",
+  );
+
+  const clearFilters = () => {
+    setSearchText("");
+    setStatusFilter("all");
+    setPriorityFilter("all");
+    setAssignedFilter("all");
+  };
+
+  const hasActiveFilters =
+    searchText ||
+    statusFilter !== "all" ||
+    priorityFilter !== "all" ||
+    assignedFilter !== "all";
 
   return (
     <>
@@ -168,6 +224,31 @@ function Board() {
           )}
         </Box>
 
+        <TaskFilters
+          searchText={searchText}
+          setSearchText={setSearchText}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+          priorityFilter={priorityFilter}
+          setPriorityFilter={setPriorityFilter}
+          assignedFilter={assignedFilter}
+          setAssignedFilter={setAssignedFilter}
+          assignedUsers={assignedUsers}
+          clearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
+
+        {filteredTasks.length === 0 && (
+          <Alert
+            severity="info"
+            sx={{
+              mb: 3,
+              width: "100%",
+            }}
+          >
+            No tasks found matching your search or filters.
+          </Alert>
+        )}
         <Grid container spacing={3}>
           <Grid size={{ xs: 12, md: 4 }}>
             <TaskColumn

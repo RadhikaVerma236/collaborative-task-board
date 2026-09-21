@@ -130,9 +130,10 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
               onClick={onEdit}
               sx={{
                 backgroundColor: "action.hover",
+                color: "primary.main",
 
                 "&:hover": {
-                  backgroundColor: "action.selected",
+                  backgroundColor: "primary.light",
                 },
               }}
             >
@@ -143,10 +144,10 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
               onClick={() => setDeleteConfirmOpen(true)}
               sx={{
                 backgroundColor: "action.hover",
+                color: "error.main",
 
                 "&:hover": {
                   backgroundColor: "error.light",
-                  color: "error.main",
                 },
               }}
             >
