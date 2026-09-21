@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { DragDropContext } from "@hello-pangea/dnd";
 
 import { Box, Alert, Grid, Stack, Typography, Button } from "@mui/material";
 
@@ -40,6 +41,36 @@ function Board() {
       await updateTaskStatus(taskId, newStatus);
     } catch (error) {
       console.error("Failed to update task:", error);
+    }
+  };
+
+  const handleDragEnd = async (result) => {
+    const { destination, source, draggableId } = result;
+
+    if (!destination) {
+      return;
+    }
+
+    if (destination.droppableId === source.droppableId) {
+      return;
+    }
+
+    const previousTasks = [...tasks];
+
+    setTasks((currentTasks) =>
+      currentTasks.map((task) =>
+        task._id === draggableId
+          ? { ...task, status: destination.droppableId }
+          : task,
+      ),
+    );
+
+    try {
+      await updateStatus(draggableId, destination.droppableId);
+    } catch (error) {
+      console.error("Failed to move task:", error);
+
+      setTasks(previousTasks);
     }
   };
 
@@ -249,37 +280,42 @@ function Board() {
             No tasks found matching your search or filters.
           </Alert>
         )}
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TaskColumn
-              title="To-Do"
-              tasks={todoTasks}
-              updateStatus={updateStatus}
-              onEdit={handleEditTask}
-              onDelete={handleTaskDeleted}
-            />
-          </Grid>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TaskColumn
+                title="To-Do"
+                tasks={todoTasks}
+                updateStatus={updateStatus}
+                onEdit={handleEditTask}
+                onDelete={handleTaskDeleted}
+                droppableId="todo"
+              />
+            </Grid>
 
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TaskColumn
-              title="In Progress"
-              tasks={inProgressTasks}
-              updateStatus={updateStatus}
-              onEdit={handleEditTask}
-              onDelete={handleTaskDeleted}
-            />
-          </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TaskColumn
+                title="In Progress"
+                tasks={inProgressTasks}
+                updateStatus={updateStatus}
+                onEdit={handleEditTask}
+                onDelete={handleTaskDeleted}
+                droppableId="in-progress"
+              />
+            </Grid>
 
-          <Grid size={{ xs: 12, md: 4 }}>
-            <TaskColumn
-              title="Completed"
-              tasks={completedTasks}
-              updateStatus={updateStatus}
-              onEdit={handleEditTask}
-              onDelete={handleTaskDeleted}
-            />
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TaskColumn
+                title="Completed"
+                tasks={completedTasks}
+                updateStatus={updateStatus}
+                onEdit={handleEditTask}
+                onDelete={handleTaskDeleted}
+                droppableId="completed"
+              />
+            </Grid>
           </Grid>
-        </Grid>
+        </DragDropContext>
       </Box>
 
       <CreateTaskModal

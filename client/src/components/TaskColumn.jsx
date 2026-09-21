@@ -4,10 +4,18 @@ import {
   AccessTime,
   CheckCircle,
 } from "@mui/icons-material";
+import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { useTheme } from "@mui/material/styles";
 import TaskCard from "./TaskCard";
 
-function TaskColumn({ title, tasks, updateStatus, onEdit, onDelete }) {
+function TaskColumn({
+  title,
+  tasks,
+  updateStatus,
+  onEdit,
+  onDelete,
+  droppableId,
+}) {
   const theme = useTheme();
 
   const columnStyles = {
@@ -101,43 +109,79 @@ function TaskColumn({ title, tasks, updateStatus, onEdit, onDelete }) {
           />
         </Box>
 
-        {tasks.length === 0 ? (
-          <Box
-            sx={{
-              minHeight: 380,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              px: 2,
-            }}
-          >
-            <Typography
-              variant="body1"
+        <Droppable droppableId={droppableId}>
+          {(provided, snapshot) => (
+            <Box
+              ref={provided.innerRef}
+              {...provided.droppableProps}
               sx={{
-                fontWeight: 600,
-                color: "text.secondary",
+                minHeight: 380,
+                borderRadius: 2,
+                transition: "background-color 0.2s ease",
+                backgroundColor: snapshot.isDraggingOver
+                  ? "rgba(79, 70, 229, 0.06)"
+                  : "transparent",
               }}
             >
-              No tasks yet
-            </Typography>
+              {tasks.length === 0 ? (
+                <Box
+                  sx={{
+                    minHeight: 380,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textAlign: "center",
+                    px: 2,
+                  }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      color: "text.secondary",
+                    }}
+                  >
+                    No tasks yet
+                  </Typography>
 
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Tasks will appear here
-            </Typography>
-          </Box>
-        ) : (
-          tasks.map((task) => (
-            <TaskCard
-              key={task._id}
-              task={task}
-              updateStatus={updateStatus}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
-          ))
-        )}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                  >
+                    Tasks will appear here
+                  </Typography>
+                </Box>
+              ) : (
+                tasks.map((task, index) => (
+                  <Draggable
+                    key={task._id}
+                    draggableId={task._id}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <Box
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <TaskCard
+                          task={task}
+                          updateStatus={updateStatus}
+                          onEdit={onEdit}
+                          onDelete={onDelete}
+                        />
+                      </Box>
+                    )}
+                  </Draggable>
+                ))
+              )}
+
+              {provided.placeholder}
+            </Box>
+          )}
+        </Droppable>
       </CardContent>
     </Card>
   );
