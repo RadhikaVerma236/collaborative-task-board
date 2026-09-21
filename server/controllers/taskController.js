@@ -3,15 +3,27 @@ const ActivityLog = require("../models/ActivityLog");
 
 const createTask = async (req, res) => {
   try {
-    const { title, description, assignedTo, priority } = req.body;
+    const { title, description, assignedTo, priority, dueDate } = req.body;
 
     const task = await Task.create({
       title,
       description,
       assignedTo,
       priority,
+      dueDate,
       createdBy: req.user.id,
     });
+
+    await task.populate([
+      {
+        path: "assignedTo",
+        select: "name email",
+      },
+      {
+        path: "createdBy",
+        select: "name email",
+      },
+    ]);
 
     res.status(201).json({
       success: true,
@@ -74,7 +86,7 @@ const getTaskById = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
-    const { title, description, assignedTo, priority } = req.body;
+    const { title, description, assignedTo, priority, dueDate } = req.body;
 
     const task = await Task.findById(req.params.id);
 
@@ -88,6 +100,7 @@ const updateTask = async (req, res) => {
     task.description = description;
     task.assignedTo = assignedTo;
     task.priority = priority;
+    task.dueDate = dueDate;
 
     await task.save();
 

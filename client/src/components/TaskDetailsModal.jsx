@@ -11,12 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import {
-  AccessTime,
-  Close,
-  Edit,
-  Delete,
-} from "@mui/icons-material";
+import { AccessTime, Close, Edit, Delete } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { deleteTask } from "../services/taskService";
 import TaskActivity from "./TaskActivity";
@@ -24,6 +19,8 @@ import TaskTimeline from "./TaskTimeline";
 import TaskPeople from "./TaskPeople";
 import TaskStatus from "./TaskStatus";
 import TaskDescription from "./TaskDescription";
+import TaskDueDate from "./TaskDueDate";
+import TaskComments from "./TaskComments";
 
 function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
   const theme = useTheme();
@@ -179,27 +176,33 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
           {task ? (
             <Stack spacing={3}>
               {/* Description */}
-             <TaskDescription task={task} />
+              <TaskDescription task={task} />
 
               {/* Status + Priority */}
-             <TaskStatus
-              task={task}
-              statusColors={statusColors}
-              statusLabels={statusLabels}
-              priorityColors={priorityColors}
-              priorityLabels={priorityLabels}
-            />
+              <TaskStatus
+                task={task}
+                statusColors={statusColors}
+                statusLabels={statusLabels}
+                priorityColors={priorityColors}
+                priorityLabels={priorityLabels}
+              />
+
+              <TaskDueDate task={task} />
 
               <Divider />
 
               {/* People */}
-             <TaskPeople task={task} />
+              <TaskPeople task={task} />
 
               <Divider />
 
               <TaskTimeline task={task} formatDate={formatDate} />
 
               <TaskActivity open={open} task={task} />
+              
+              <Divider />
+
+              <TaskComments task={task} />
             </Stack>
           ) : (
             <Box

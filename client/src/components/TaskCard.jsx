@@ -13,6 +13,7 @@ import Person from "@mui/icons-material/Person";
 import { useTheme } from "@mui/material/styles";
 import { useState } from "react";
 import TaskDetailsModal from "./TaskDetailsModal";
+import TaskDueDate from "./TaskDueDate";
 
 function TaskCard({ task, updateStatus, onEdit, onDelete }) {
   const theme = useTheme();
@@ -33,8 +34,8 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
 
   const priorityColors = {
     low: theme.palette.status.priorityLow,
-  medium: theme.palette.status.priorityMedium,
-  high: theme.palette.status.priorityHigh,
+    medium: theme.palette.status.priorityMedium,
+    high: theme.palette.status.priorityHigh,
   };
 
   const priorityLabels = {
@@ -163,15 +164,13 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
                 Assigned to
               </Typography>
 
-              <Typography
-                variant="body2"
-                fontWeight={500}
-                noWrap
-              >
+              <Typography variant="body2" fontWeight={500} noWrap>
                 {task.assignedTo?.name || "Unassigned"}
               </Typography>
             </Box>
           </Box>
+
+         <TaskDueDate task={task} compact />
 
           {/* Change Status */}
           <Box onClick={(e) => e.stopPropagation()}>
@@ -193,17 +192,11 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
                   updateStatus(task._id, e.target.value);
                 }}
               >
-                <MenuItem value="todo">
-                  To-Do
-                </MenuItem>
+                <MenuItem value="todo">To-Do</MenuItem>
 
-                <MenuItem value="in-progress">
-                  In Progress
-                </MenuItem>
+                <MenuItem value="in-progress">In Progress</MenuItem>
 
-                <MenuItem value="completed">
-                  Completed
-                </MenuItem>
+                <MenuItem value="completed">Completed</MenuItem>
               </Select>
             </FormControl>
           </Box>

@@ -6,22 +6,16 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
   Divider,
-  MenuItem,
   Stack,
-  TextField,
   Typography,
-  IconButton,
 } from "@mui/material";
-import Close from "@mui/icons-material/Close";
 import Assignment from "@mui/icons-material/Assignment";
-import Flag from "@mui/icons-material/Flag";
 import Person from "@mui/icons-material/Person";
-import {
-  createTask,
-  updateTask,
-} from "../services/taskService";
+import TaskModalHeader from "./TaskModalHeader";
+import TaskFormFields from "./TaskFormFields";
+import TaskAssignmentFields from "./TaskAssignmentFields";
+import { createTask, updateTask } from "../services/taskService";
 
 function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
   const [formData, setFormData] = useState({
@@ -29,6 +23,7 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
     description: "",
     priority: "medium",
     assignedTo: "",
+    dueDate: "",
   });
 
   const [users, setUsers] = useState([]);
@@ -46,7 +41,7 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         setUsers(response.data.users);
@@ -59,15 +54,18 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
   }, [open]);
 
   useEffect(() => {
-  if (task && users.length > 0) {
-    setFormData({
-      title: task.title || "",
-      description: task.description || "",
-      priority: task.priority || "medium",
-      assignedTo: task.assignedTo?._id || task.assignedTo || "",
-    });
-  }
-}, [task, users]);
+    if (task && users.length > 0) {
+      setFormData({
+        title: task.title || "",
+        description: task.description || "",
+        priority: task.priority || "medium",
+        assignedTo: task.assignedTo?._id || task.assignedTo || "",
+        dueDate: task.dueDate
+          ? new Date(task.dueDate).toISOString().split("T")[0]
+          : "",
+      });
+    }
+  }, [task, users]);
 
   const handleChange = (e) => {
     setFormData({
@@ -82,25 +80,22 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
     try {
       let response;
 
-if (task) {
-  response = await updateTask(task._id, formData);
-} else {
-  response = await createTask(formData);
-}
+      if (task) {
+        response = await updateTask(task._id, formData);
+      } else {
+        response = await createTask(formData);
+      }
 
-console.log("UPDATED TASK RESPONSE:", response.data.task);
+      console.log("UPDATED TASK RESPONSE:", response.data.task);
 
-  alert(
-  task
-    ? "Task updated successfully!"
-    : "Task created successfully!"
-);
+      alert(task ? "Task updated successfully!" : "Task created successfully!");
 
       setFormData({
         title: "",
         description: "",
         priority: "medium",
         assignedTo: "",
+        dueDate: "",
       });
 
       onTaskCreated(response.data.task);
@@ -108,10 +103,7 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
     } catch (error) {
       console.error(error);
 
-      alert(
-        error.response?.data?.message ||
-          "Failed to create task"
-      );
+      alert(error.response?.data?.message || "Failed to create task");
     }
   };
 
@@ -121,6 +113,7 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
       description: "",
       priority: "medium",
       assignedTo: "",
+      dueDate: "",
     });
 
     onClose();
@@ -131,86 +124,22 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
       open={open}
       onClose={handleClose}
       fullWidth
-      maxWidth="sm"
+      maxWidth="md"
       sx={{
-    "& .MuiDialog-paper": {
-      borderRadius: 3,
-      overflow: "hidden",
-    },
-  }}
+        "& .MuiDialog-paper": {
+          borderRadius: 3,
+          overflow: "hidden",
+        },
+      }}
     >
       {/* Header */}
-      <DialogTitle
-        sx={{
-          px: { xs: 2.5, sm: 4 },
-          py: 2.5,
-          borderBottom: "1px solid",
-          borderColor: "divider",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="overline"
-              color="primary"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: 1,
-              }}
-            >
-              {task ? "Edit Task" : "New Task"}
-            </Typography>
-
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{
-                fontWeight: 700,
-                mt: 0.5,
-              }}
-            >
-              {task ? "Edit Task" : "Create Task"}
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
-            >
-              {task
-  ? "Update the task details and assignment."
-  : "Create and assign a new task to a team member."}
-            </Typography>
-          </Box>
-
-          <IconButton
-            onClick={handleClose}
-            sx={{
-              flexShrink: 0,
-              backgroundColor: "action.hover",
-
-              "&:hover": {
-                backgroundColor: "action.selected",
-              },
-            }}
-          >
-            <Close />
-          </IconButton>
-        </Box>
-      </DialogTitle>
+      <TaskModalHeader task={task} onClose={handleClose} />
 
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent
           sx={{
-            px: { xs: 2.5, sm: 4 },
-            py: 3,
+            px: { xs: 2.5, sm: 5 },
+            py: 4,
             backgroundColor: "#F8FAFC",
           }}
         >
@@ -232,45 +161,24 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
                   }}
                 />
 
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700 }}
-                >
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   Task Details
                 </Typography>
               </Box>
 
               <Box
                 sx={{
-                  p: 2,
+                  p: { xs: 2, sm: 2.5 },
                   backgroundColor: "#FFFFFF",
                   border: "1px solid",
                   borderColor: "divider",
                   borderRadius: 2,
                 }}
               >
-                <Stack spacing={2.5}>
-                  <TextField
-                    label="Task Title"
-                    name="title"
-                    placeholder="Enter task title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    fullWidth
-                  />
-
-                  <TextField
-                    label="Description"
-                    name="description"
-                    placeholder="Describe what needs to be done..."
-                    value={formData.description}
-                    onChange={handleChange}
-                    multiline
-                    rows={4}
-                    fullWidth
-                  />
-                </Stack>
+                <TaskFormFields
+                  formData={formData}
+                  handleChange={handleChange}
+                />
               </Box>
             </Box>
 
@@ -293,68 +201,25 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
                   }}
                 />
 
-                <Typography
-                  variant="subtitle1"
-                  sx={{ fontWeight: 700 }}
-                >
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   Assignment
                 </Typography>
               </Box>
 
               <Box
                 sx={{
-                  p: 2,
+                  p: { xs: 2, sm: 2.5 },
                   backgroundColor: "#FFFFFF",
                   border: "1px solid",
                   borderColor: "divider",
                   borderRadius: 2,
                 }}
               >
-                <Stack spacing={2.5}>
-                  <TextField
-                    select
-                    label="Priority"
-                    name="priority"
-                    value={formData.priority}
-                    onChange={handleChange}
-                    fullWidth
-                  >
-                    <MenuItem value="low">
-                      Low
-                    </MenuItem>
-
-                    <MenuItem value="medium">
-                      Medium
-                    </MenuItem>
-
-                    <MenuItem value="high">
-                      High
-                    </MenuItem>
-                  </TextField>
-
-                  <TextField
-                    select
-                    label="Assign To"
-                    name="assignedTo"
-                    value={formData.assignedTo}
-                    onChange={handleChange}
-                    required
-                    fullWidth
-                  >
-                    <MenuItem value="">
-                      Select a user
-                    </MenuItem>
-
-                    {users.map((user) => (
-                      <MenuItem
-                        key={user._id}
-                        value={user._id}
-                      >
-                        {user.name} ({user.role})
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Stack>
+                <TaskAssignmentFields
+                  formData={formData}
+                  handleChange={handleChange}
+                  users={users}
+                />
               </Box>
             </Box>
           </Stack>
@@ -367,7 +232,7 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
             backgroundColor: "#FFFFFF",
             borderTop: "1px solid",
             borderColor: "divider",
-            gap: 1,
+            gap: 1.5,
           }}
         >
           <Button
@@ -375,15 +240,15 @@ console.log("UPDATED TASK RESPONSE:", response.data.task);
             variant="outlined"
             color="secondary"
             onClick={handleClose}
+            sx={{
+              minWidth: 100,
+            }}
           >
             Cancel
           </Button>
 
-          <Button
-            type="submit"
-            variant="contained"
-          >
-           {task ? "Save Changes" : "Create Task"}
+          <Button type="submit" variant="contained" sx={{ minWidth: 120 }}>
+            {task ? "Save Changes" : "Create Task"}
           </Button>
         </DialogActions>
       </Box>
