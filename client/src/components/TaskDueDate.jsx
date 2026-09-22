@@ -24,9 +24,7 @@ function TaskDueDate({ task, compact = false }) {
         alignItems: "center",
         gap: 1,
         ...(compact
-          ? {
-              mb: 2.5,
-            }
+          ? {}
           : {
               p: 2,
               backgroundColor: "#FFFFFF",

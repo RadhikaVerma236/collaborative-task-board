@@ -59,6 +59,28 @@ const getTasks = async (req, res) => {
   }
 };
 
+const getMyTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({
+      assignedTo: req.user.id,
+    })
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      tasks,
+    });
+  } catch (error) {
+    console.error("Get my tasks error:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch your tasks",
+    });
+  }
+};
+
 const getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
@@ -227,6 +249,7 @@ const deleteTask = async (req, res) => {
 module.exports = {
   createTask,
   getTasks,
+  getMyTasks,
   getTaskById,
   updateTask,
   updateTaskStatus,

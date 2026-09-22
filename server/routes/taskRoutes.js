@@ -3,6 +3,7 @@ const { taskLimiter } = require("../middleware/rateLimiter");
 const {
   createTask,
   getTasks,
+  getMyTasks,
   getTaskById,
   updateTask,
   updateTaskStatus,
@@ -15,6 +16,7 @@ const protect = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.get("/", protect, taskLimiter, getTasks);
+router.get("/my", protect, taskLimiter, getMyTasks);
 router.get("/:id", protect, getTaskById);
 router.post("/", protect, isAdmin, taskLimiter, createTask);
 router.patch("/:id", protect, isAdmin, taskLimiter, updateTask);

@@ -16,6 +16,10 @@ export const getTasks = () => {
   return axios.get(API_URL, getAuthHeaders());
 };
 
+export const getMyTasks = () => {
+  return axios.get(`${API_URL}/my`, getAuthHeaders());
+};
+
 export const createTask = (taskData) => {
   return axios.post(API_URL, taskData, getAuthHeaders());
 };
