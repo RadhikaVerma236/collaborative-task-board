@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Box, Stack, Typography, Button } from "@mui/material";
 
@@ -20,7 +20,7 @@ const [selectedTask, setSelectedTask] = useState("all");
 const [totalActivities, setTotalActivities] = useState(0);
 const [todayActivities, setTodayActivities] = useState(0);
 
-  const fetchLogs = async (cursor = null) => {
+  const fetchLogs = useCallback(async (cursor = null) => {
     try {
       setLoading(true);
 
@@ -52,9 +52,9 @@ const [todayActivities, setTodayActivities] = useState(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedTask]);
 
-    const fetchTasks = async () => {
+    const fetchTasks = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
 
@@ -71,18 +71,18 @@ const [todayActivities, setTodayActivities] = useState(0);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchLogs();
     fetchTasks();
-  }, []);
+  }, [fetchLogs, fetchTasks]);
 
  useEffect(() => {
   setPage(1);
   setCursorHistory([]);
   fetchLogs();
-}, [selectedTask]);
+}, [fetchLogs]);
 
   const handleNext = () => {
     if (!nextCursor) return;

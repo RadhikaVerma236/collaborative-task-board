@@ -5,6 +5,7 @@ import {
   Box,
   LinearProgress,
 } from "@mui/material";
+import { memo } from "react";
 
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
@@ -304,4 +305,4 @@ function TaskStatCard({ title, value, subtitle, detail }) {
   );
 }
 
-export default TaskStatCard;
+export default memo(TaskStatCard);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Alert,
   Box,
@@ -42,37 +42,49 @@ function MyTasks() {
 
   const totalTasks = tasks.length;
 
-  const inProgressTasks = tasks.filter(
-    (task) => task.status === "in-progress"
-  ).length;
+  const { inProgressTasks, completedTasks, overdueTasks } = useMemo(() => {
+  let inProgress = 0;
+  let completed = 0;
+  let overdue = 0;
 
-  const completedTasks = tasks.filter(
-    (task) => task.status === "completed"
-  ).length;
+  const currentDate = new Date();
 
-  const overdueTasks = tasks.filter((task) => {
-    if (!task.dueDate || task.status === "completed") {
-      return false;
+  tasks.forEach((task) => {
+    if (task.status === "in-progress") {
+      inProgress++;
     }
 
-    return new Date(task.dueDate) < new Date();
-  }).length;
+    if (task.status === "completed") {
+      completed++;
+    }
 
-  const activeTasks = totalTasks - completedTasks;
+    if (
+      task.dueDate &&
+      task.status !== "completed" &&
+      new Date(task.dueDate) < currentDate
+    ) {
+      overdue++;
+    }
+  });
 
-  const completionRate =
-    totalTasks > 0
-      ? Math.round(
-          (completedTasks / totalTasks) * 100
-        )
-      : 0;
+  return {
+    inProgressTasks: inProgress,
+    completedTasks: completed,
+    overdueTasks: overdue,
+  };
+}, [tasks]);
 
-  const inProgressRate =
-    totalTasks > 0
-      ? Math.round(
-          (inProgressTasks / totalTasks) * 100
-        )
-      : 0;
+const activeTasks = totalTasks - completedTasks;
+
+const completionRate =
+  totalTasks > 0
+    ? Math.round((completedTasks / totalTasks) * 100)
+    : 0;
+
+const inProgressRate =
+  totalTasks > 0
+    ? Math.round((inProgressTasks / totalTasks) * 100)
+    : 0;
 
   const stats = [
     {

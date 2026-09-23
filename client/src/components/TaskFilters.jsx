@@ -5,6 +5,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
+import { memo } from "react";
 
 function TaskFilters({
   searchText,
@@ -110,4 +111,4 @@ function TaskFilters({
   );
 }
 
-export default TaskFilters;
+export default memo(TaskFilters);

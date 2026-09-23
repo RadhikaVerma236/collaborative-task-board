@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   Box,
   Chip,
@@ -40,11 +40,11 @@ function MyTaskTable({ tasks, onTaskClick }) {
   const hasActiveFilters =
     searchText || statusFilter !== "all" || priorityFilter !== "all";
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchText("");
     setStatusFilter("all");
     setPriorityFilter("all");
-  };
+  }, []);
 
   const statusLabels = {
     todo: "To-Do",
@@ -66,7 +66,7 @@ function MyTaskTable({ tasks, onTaskClick }) {
 
   const columns = ["Task", "Priority", "Status", "Due Date", "Created By"];
 
-  const renderTaskRow = (task) => (
+  const renderTaskRow = useCallback((task) => (
     <TableRow
       key={task._id}
       hover
@@ -149,7 +149,7 @@ function MyTaskTable({ tasks, onTaskClick }) {
         </Typography>
       </TableCell>
     </TableRow>
-  );
+  ), [onTaskClick],);
 
   return (
     <Box>

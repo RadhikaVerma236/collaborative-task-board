@@ -16,8 +16,10 @@ import TaskModalHeader from "./TaskModalHeader";
 import TaskFormFields from "./TaskFormFields";
 import TaskAssignmentFields from "./TaskAssignmentFields";
 import { createTask, updateTask } from "../services/taskService";
+import { useSnackbar } from "../context/SnackbarContext";
 
 function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
+  const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -99,11 +101,19 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
       });
 
       onTaskCreated(response.data.task);
+      showSnackbar(
+      task ? "Task updated successfully." : "Task created successfully.",
+      "success",
+    );
       onClose();
     } catch (error) {
       console.error(error);
 
-      alert(error.response?.data?.message || "Failed to create task");
+     showSnackbar(
+      error.response?.data?.message ||
+        (task ? "Failed to update task." : "Failed to create task."),
+      "error",
+    ); 
     }
   };
 

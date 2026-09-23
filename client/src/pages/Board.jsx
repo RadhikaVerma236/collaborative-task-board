@@ -1,78 +1,89 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 
-import { Box, Alert, Grid, Stack, Typography, Button } from "@mui/material";
+import { Box, Alert, Grid, Typography, Button } from "@mui/material";
 
 import Navbar from "../components/Navbar";
 import TaskColumn from "../components/TaskColumn";
 import CreateTaskModal from "../components/CreateTaskModal";
 import { getTasks, updateTaskStatus } from "../services/taskService";
 import TaskFilters from "../components/TaskFilters";
+import { useSnackbar } from "../context/SnackbarContext";
 
 function Board() {
   const [tasks, setTasks] = useState([]);
-  const [toastMessage, setToastMessage] = useState("");
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [assignedFilter, setAssignedFilter] = useState("all");
+  const { showSnackbar } = useSnackbar();
 
-  const fetchTasks = async () => {
+  const isAdmin = useMemo(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      return user?.role === "Admin";
+    } catch {
+      return false;
+    }
+  }, []);
+
+  const fetchTasks = useCallback(async () => {
     try {
       const response = await getTasks();
-
-      console.log(
-        "TASK IDS:",
-        response.data.tasks.map((task) => task._id),
-      );
 
       setTasks(response.data.tasks);
     } catch (error) {
       console.error("Failed to fetch tasks:", error);
+      showSnackbar("Failed to load tasks.", "error");
     }
-  };
+  }, [showSnackbar]);
 
-  const updateStatus = async (taskId, newStatus) => {
+  const updateStatus = useCallback(async (taskId, newStatus) => {
     try {
       await updateTaskStatus(taskId, newStatus);
     } catch (error) {
       console.error("Failed to update task:", error);
+      showSnackbar("Failed to update task.", "error");
+      throw error;
     }
-  };
+  }, [showSnackbar]);
 
-  const handleDragEnd = async (result) => {
-    const { destination, source, draggableId } = result;
+  const handleDragEnd = useCallback(
+    async (result) => {
+      const { destination, source, draggableId } = result;
 
-    if (!destination) {
-      return;
-    }
+      if (!destination) {
+        return;
+      }
 
-    if (destination.droppableId === source.droppableId) {
-      return;
-    }
+      if (destination.droppableId === source.droppableId) {
+        return;
+      }
 
-    const previousTasks = [...tasks];
+      const previousTasks = tasks;
 
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task._id === draggableId
-          ? { ...task, status: destination.droppableId }
-          : task,
-      ),
-    );
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          task._id === draggableId
+            ? { ...task, status: destination.droppableId }
+            : task,
+        ),
+      );
 
-    try {
-      await updateStatus(draggableId, destination.droppableId);
-    } catch (error) {
-      console.error("Failed to move task:", error);
-
-      setTasks(previousTasks);
-    }
-  };
+      try {
+        await updateStatus(draggableId, destination.droppableId);
+        showSnackbar("Task status updated successfully.", "success");
+      } catch (error) {
+        console.error("Failed to move task:", error);
+        setTasks(previousTasks);
+      }
+    },
+    [tasks, updateStatus, showSnackbar],
+  );
 
   useEffect(() => {
     fetchTasks();
@@ -96,23 +107,22 @@ function Board() {
         ),
       );
 
-      setToastMessage(
-        `Task "${updatedTask.title}" was moved to ${updatedTask.status}`,
-      );
-
-      setTimeout(() => {
-        setToastMessage("");
-      }, 3000);
+      showSnackbar(
+  `Task "${updatedTask.title}" was moved to ${updatedTask.status}.`,
+  "info",
+);
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [fetchTasks, showSnackbar]);
 
-  const handleTaskCreated = (updatedTask) => {
+  const handleTaskCreated = useCallback((updatedTask) => {
     setTasks((currentTasks) => {
-      const exists = currentTasks.some((task) => task._id === updatedTask._id);
+      const exists = currentTasks.some(
+        (task) => task._id === updatedTask._id,
+      );
 
       if (exists) {
         return currentTasks.map((task) =>
@@ -122,75 +132,115 @@ function Board() {
 
       return [updatedTask, ...currentTasks];
     });
-  };
+  }, []);
 
-  const handleEditTask = (task) => {
+  const handleEditTask = useCallback((task) => {
     setSelectedTask(task);
     setCreateModalOpen(true);
-  };
+  }, []);
 
-  const handleTaskDeleted = (taskId) => {
+  const handleTaskDeleted = useCallback((taskId) => {
     setTasks((currentTasks) =>
       currentTasks.filter((task) => task._id !== taskId),
     );
-  };
+  }, []);
 
-  const filteredTasks = tasks.filter((task) => {
-    const search = searchText.toLowerCase();
+  const assignedUsers = useMemo(() => {
+    const users = new Map();
 
-    const matchesSearch =
-      task.title?.toLowerCase().includes(search) ||
-      task.description?.toLowerCase().includes(search);
+    tasks.forEach((task) => {
+      const user = task.assignedTo;
 
-    const matchesStatus =
-      statusFilter === "all" || task.status === statusFilter;
+      if (!user) {
+        return;
+      }
 
-    const matchesPriority =
-      priorityFilter === "all" || task.priority === priorityFilter;
+      const userId = user?._id || user;
 
-    const assignedUserId =
-      typeof task.assignedTo === "object"
-        ? task.assignedTo?._id
-        : task.assignedTo;
+      if (!users.has(userId)) {
+        users.set(userId, user);
+      }
+    });
 
-    const matchesAssigned =
-      assignedFilter === "all" || assignedUserId === assignedFilter;
+    return Array.from(users.values());
+  }, [tasks]);
 
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssigned;
-  });
+  const {
+    filteredTasks,
+    todoTasks,
+    inProgressTasks,
+    completedTasks,
+  } = useMemo(() => {
+    const search = searchText.trim().toLowerCase();
 
-  const assignedUsers = tasks
-    .map((task) => task.assignedTo)
-    .filter(Boolean)
-    .filter(
-      (user, index, array) =>
-        array.findIndex(
-          (item) => (item?._id || item) === (user?._id || user),
-        ) === index,
-    );
+    const filtered = tasks.filter((task) => {
+      const matchesSearch =
+        !search ||
+        task.title?.toLowerCase().includes(search) ||
+        task.description?.toLowerCase().includes(search);
 
-  const todoTasks = filteredTasks.filter((task) => task.status === "todo");
+      const matchesStatus =
+        statusFilter === "all" || task.status === statusFilter;
 
-  const inProgressTasks = filteredTasks.filter(
-    (task) => task.status === "in-progress",
-  );
+      const matchesPriority =
+        priorityFilter === "all" || task.priority === priorityFilter;
 
-  const completedTasks = filteredTasks.filter(
-    (task) => task.status === "completed",
-  );
+      const assignedUserId =
+        typeof task.assignedTo === "object"
+          ? task.assignedTo?._id
+          : task.assignedTo;
 
-  const clearFilters = () => {
+      const matchesAssigned =
+        assignedFilter === "all" || assignedUserId === assignedFilter;
+
+      return (
+        matchesSearch &&
+        matchesStatus &&
+        matchesPriority &&
+        matchesAssigned
+      );
+    });
+
+    return {
+      filteredTasks: filtered,
+      todoTasks: filtered.filter((task) => task.status === "todo"),
+      inProgressTasks: filtered.filter(
+        (task) => task.status === "in-progress",
+      ),
+      completedTasks: filtered.filter(
+        (task) => task.status === "completed",
+      ),
+    };
+  }, [
+    tasks,
+    searchText,
+    statusFilter,
+    priorityFilter,
+    assignedFilter,
+  ]);
+
+  const clearFilters = useCallback(() => {
     setSearchText("");
     setStatusFilter("all");
     setPriorityFilter("all");
     setAssignedFilter("all");
-  };
+  }, []);
 
   const hasActiveFilters =
     searchText ||
     statusFilter !== "all" ||
     priorityFilter !== "all" ||
     assignedFilter !== "all";
+
+  const handleCreateTask = useCallback(() => {
+    setSelectedTask(null);
+    setCreateModalOpen(true);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setCreateModalOpen(false);
+    setSelectedTask(null);
+  }, []);
 
   return (
     <>
@@ -202,11 +252,6 @@ function Board() {
           py: 4,
         }}
       >
-        {toastMessage && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            {toastMessage}
-          </Alert>
-        )}
 
         <Box
           sx={{
@@ -238,13 +283,10 @@ function Board() {
             </Typography>
           </Box>
 
-          {JSON.parse(localStorage.getItem("user"))?.role === "Admin" && (
+          {isAdmin && (
             <Button
               variant="contained"
-              onClick={() => {
-                setSelectedTask(null);
-                setCreateModalOpen(true);
-              }}
+              onClick={handleCreateTask}
               sx={{
                 px: 2.5,
                 py: 1.1,
@@ -280,6 +322,7 @@ function Board() {
             No tasks found matching your search or filters.
           </Alert>
         )}
+
         <DragDropContext onDragEnd={handleDragEnd}>
           <Grid container spacing={3}>
             <Grid size={{ xs: 12, md: 4 }}>
@@ -320,10 +363,7 @@ function Board() {
 
       <CreateTaskModal
         open={createModalOpen}
-        onClose={() => {
-          setCreateModalOpen(false);
-          setSelectedTask(null);
-        }}
+        onClose={handleCloseModal}
         onTaskCreated={handleTaskCreated}
         task={selectedTask}
       />

@@ -21,9 +21,11 @@ import TaskStatus from "./TaskStatus";
 import TaskDescription from "./TaskDescription";
 import TaskDueDate from "./TaskDueDate";
 import TaskComments from "./TaskComments";
+import { useSnackbar } from "../context/SnackbarContext";
 
 function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
   const theme = useTheme();
+  const { showSnackbar } = useSnackbar();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const statusColors = {
@@ -63,8 +65,13 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
 
       setDeleteConfirmOpen(false);
       onClose();
+      showSnackbar("Task deleted successfully.", "success");
     } catch (error) {
       console.error("Failed to delete task:", error);
+      showSnackbar(
+      error.response?.data?.message || "Failed to delete task.",
+      "error",
+    );
     }
   };
 

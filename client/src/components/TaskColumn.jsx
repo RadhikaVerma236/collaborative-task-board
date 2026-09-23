@@ -7,6 +7,7 @@ import {
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { useTheme } from "@mui/material/styles";
 import TaskCard from "./TaskCard";
+import { useMemo } from "react";
 
 function TaskColumn({
   title,
@@ -18,7 +19,7 @@ function TaskColumn({
 }) {
   const theme = useTheme();
 
-  const columnStyles = {
+  const columnStyles = useMemo( () => ({
     "To-Do": {
       color: theme.palette.status.todo,
       background: theme.palette.status.todoBackground,
@@ -36,7 +37,9 @@ function TaskColumn({
       background: theme.palette.status.completedBackground,
       icon: <CheckCircle fontSize="small" />,
     },
-  };
+  }),
+  [theme],
+);
 
   const currentStyle = columnStyles[title];
 

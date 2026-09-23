@@ -1,15 +1,17 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Board from './pages/Board';
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ActivityLog from "./pages/ActivityLog";
-import MyTasks from "./pages/MyTasks";
+import { lazy, Suspense } from "react";
+const Board = lazy(() => import("./pages/Board"));
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ActivityLog = lazy(() => import("./pages/ActivityLog"));
+const MyTasks = lazy(() => import("./pages/MyTasks"));
 
 function App() {
 
   return (
     <>
     <BrowserRouter>
+    <Suspense fallback={<div>Loading...</div>}>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
@@ -18,6 +20,7 @@ function App() {
         <Route path="/my-tasks" element={<MyTasks />} />
         <Route path="/activity" element={<ActivityLog />} />
       </Routes>
+      </Suspense>
     </BrowserRouter>
     </>
   )

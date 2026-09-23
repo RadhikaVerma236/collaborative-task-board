@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Person from "@mui/icons-material/Person";
 import { useTheme } from "@mui/material/styles";
-import { useState } from "react";
+import { memo, useState } from "react";
 import TaskDetailsModal from "./TaskDetailsModal";
 import TaskDueDate from "./TaskDueDate";
 
@@ -214,4 +214,4 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
   );
 }
 
-export default TaskCard;
+export default memo(TaskCard);
