@@ -13,12 +13,14 @@ import {
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
+import { useSnackbar } from "../context/SnackbarContext";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -35,9 +37,13 @@ function Login() {
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
+      showSnackbar("Login successful.", "success");
       navigate("/board");
     } catch (error) {
-      alert(error.response?.data?.message || "Login failed");
+      showSnackbar(
+      error.response?.data?.message || "Login failed.",
+      "error"
+    );
     }
   };
 

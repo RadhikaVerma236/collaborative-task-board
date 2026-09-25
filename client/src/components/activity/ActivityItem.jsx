@@ -1,9 +1,40 @@
 import { Box, Chip, Typography } from "@mui/material";
-import { AccessTime, Update } from "@mui/icons-material";
+import AccessTime from "@mui/icons-material/AccessTime";
+import Update from "@mui/icons-material/Update";
+import AddCircleOutline from "@mui/icons-material/AddCircleOutlineOutlined";
+import CheckCircleOutline from "@mui/icons-material/CheckCircleOutlineOutlined";
+import DeleteOutline from "@mui/icons-material/DeleteOutlineOutlined";
+import SwapHorizOutlined from "@mui/icons-material/SwapHorizOutlined";
+import PersonOutline from "@mui/icons-material/PersonOutlined";
 import { useTheme } from "@mui/material/styles";
+
+// Derives an icon + color from the action text so the feed communicates
+// what happened at a glance, instead of every row looking identical.
+function getActivityVisual(action = "", theme) {
+  const text = action.toLowerCase();
+
+  if (text.includes("delet")) {
+    return { icon: <DeleteOutline fontSize="small" />, color: theme.palette.error.main };
+  }
+  if (text.includes("complet")) {
+    return { icon: <CheckCircleOutline fontSize="small" />, color: theme.palette.status.completed };
+  }
+  if (text.includes("assign")) {
+    return { icon: <PersonOutline fontSize="small" />, color: theme.palette.primary.main };
+  }
+  if (text.includes("mov") || text.includes("status") || text.includes("progress")) {
+    return { icon: <SwapHorizOutlined fontSize="small" />, color: theme.palette.status.inProgress };
+  }
+  if (text.includes("creat")) {
+    return { icon: <AddCircleOutline fontSize="small" />, color: theme.palette.primary.main };
+  }
+
+  return { icon: <Update fontSize="small" />, color: theme.palette.primary.main };
+}
 
 function ActivityItem({ log }) {
   const theme = useTheme();
+  const { icon, color } = getActivityVisual(log.action, theme);
 
   return (
     <Box
@@ -24,15 +55,15 @@ function ActivityItem({ log }) {
           width: 40,
           height: 40,
           borderRadius: "50%",
-          backgroundColor: "primary.main",
-          color: "#FFFFFF",
+          backgroundColor: color,
+          color: theme.palette.common.white,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
         }}
       >
-        <Update fontSize="small" />
+        {icon}
       </Box>
 
       {/* Activity Content */}
@@ -103,7 +134,7 @@ function ActivityItem({ log }) {
           size="small"
           sx={{
             mt: 1.25,
-            backgroundColor: theme.palette.action.hover,
+            backgroundColor: "action.hover",
             color: "text.secondary",
             fontWeight: 500,
           }}

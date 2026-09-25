@@ -5,12 +5,10 @@ import {
   FormControl,
   Select,
   MenuItem,
-  Chip,
   Box,
-  Divider,
 } from "@mui/material";
 import Person from "@mui/icons-material/Person";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import { memo, useState } from "react";
 import TaskDetailsModal from "./TaskDetailsModal";
 import TaskDueDate from "./TaskDueDate";
@@ -26,12 +24,6 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
     completed: theme.palette.status.completed,
   };
 
-  const statusLabels = {
-    todo: "To-Do",
-    "in-progress": "In Progress",
-    completed: "Completed",
-  };
-
   const priorityColors = {
     low: theme.palette.status.priorityLow,
     medium: theme.palette.status.priorityMedium,
@@ -39,38 +31,65 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
   };
 
   const priorityLabels = {
-    low: "Low",
-    medium: "Medium",
-    high: "High",
+    low: "Low priority",
+    medium: "Medium priority",
+    high: "High priority",
   };
+
+  const currentPriorityColor = priorityColors[task.priority];
+  const currentStatusColor = statusColors[task.status];
 
   return (
     <>
       <Card
         onClick={() => setDetailsOpen(true)}
         sx={{
-          mb: 2,
+          mb: 1.5,
+          height: 220,
           backgroundColor: "#FFFFFF",
+          borderLeft: "4px solid",
+          borderLeftColor: currentPriorityColor,
           border: "1px solid",
           borderColor: "divider",
-          transition: "all 0.2s ease",
+          borderRadius: 1.5,
+          transition: "box-shadow 0.18s ease, transform 0.18s ease",
           cursor: "pointer",
+          boxSizing: "border-box",
+          boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.06)}`,
 
           "&:hover": {
-            boxShadow: 3,
+            boxShadow: `0 6px 20px -8px ${alpha(theme.palette.common.black, 0.25)}`,
             transform: "translateY(-2px)",
-            borderColor: "primary.main",
           },
         }}
       >
-        <CardContent sx={{ p: 2.5 }}>
+        <CardContent
+          sx={{
+            pl: 1.75,
+            pr: 1.5,
+            py: 1.5,
+            height: "100%",
+            boxSizing: "border-box",
+            display: "flex",
+            flexDirection: "column",
+            "&:last-child": {
+              pb: 1.5,
+            },
+          }}
+        >
           {/* Title */}
           <Typography
-            variant="h6"
             sx={{
-              fontWeight: 600,
-              mb: 1,
-              lineHeight: 1.4,
+              fontWeight: 700,
+              fontSize: "1rem",
+              letterSpacing: "-0.01em",
+              lineHeight: 1.3,
+              mb: 0.5,
+              minHeight: "2.6rem",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
             }}
           >
             {task.title}
@@ -78,11 +97,11 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
 
           {/* Description */}
           <Typography
-            variant="body2"
-            color="text.secondary"
             sx={{
-              lineHeight: 1.6,
-              mb: 2,
+              fontSize: "0.8rem",
+              lineHeight: 1.45,
+              mb: 1.25,
+              color: "text.secondary",
               display: "-webkit-box",
               WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
@@ -92,110 +111,128 @@ function TaskCard({ task, updateStatus, onEdit, onDelete }) {
             {task.description || "No description provided"}
           </Typography>
 
-          {/* Priority + Status */}
+          {/* Priority + Due Date + Assignee */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               gap: 1,
-              mb: 2.5,
+              mb: 1.25,
+              minWidth: 0,
             }}
           >
-            <Chip
-              label={`Priority: ${priorityLabels[task.priority]}`}
-              size="small"
-              sx={{
-                backgroundColor: priorityColors[task.priority],
-                color: "#FFFFFF",
-                fontWeight: 600,
-              }}
-            />
-
-            <Chip
-              label={statusLabels[task.status]}
-              size="small"
-              sx={{
-                backgroundColor: statusColors[task.status],
-                color: "#FFFFFF",
-                fontWeight: 600,
-                flexShrink: 0,
-              }}
-            />
-          </Box>
-
-          <Divider sx={{ mb: 2 }} />
-
-          {/* Assigned User */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              mb: 2.5,
-            }}
-          >
+            {/* Priority */}
             <Box
+              title={priorityLabels[task.priority]}
               sx={{
-                width: 32,
-                height: 32,
-                borderRadius: "50%",
-                backgroundColor: "action.hover",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
+                gap: 0.625,
                 flexShrink: 0,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  backgroundColor: currentPriorityColor,
+                }}
+              />
+              <Typography
+                sx={{
+                  fontSize: "0.72rem",
+                  fontWeight: 600,
+                  color: currentPriorityColor,
+                }}
+              >
+                {priorityLabels[task.priority].replace(" priority", "")}
+              </Typography>
+            </Box>
+
+            {/* Due Date */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                minWidth: 0,
+              }}
+            >
+              <TaskDueDate task={task} compact />
+            </Box>
+
+            {/* Assignee */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                minWidth: 0,
               }}
             >
               <Person
                 sx={{
-                  fontSize: 18,
-                  color: "text.secondary",
+                  fontSize: 15,
+                  color: "text.disabled",
+                  flexShrink: 0,
                 }}
               />
-            </Box>
-
-            <Box sx={{ minWidth: 0 }}>
               <Typography
-                variant="caption"
-                color="text.secondary"
-                display="block"
+                noWrap
+                sx={{
+                  fontSize: "0.72rem",
+                  fontWeight: 500,
+                  color: "text.secondary",
+                }}
               >
-                Assigned to
-              </Typography>
-
-              <Typography variant="body2" fontWeight={500} noWrap>
                 {task.assignedTo?.name || "Unassigned"}
               </Typography>
             </Box>
           </Box>
 
-         <TaskDueDate task={task} compact />
-
-          {/* Change Status */}
-          <Box onClick={(e) => e.stopPropagation()}>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: "block",
-                mb: 0.75,
-              }}
-            >
-              Change status
-            </Typography>
-
+          {/* Status */}
+          <Box onClick={(e) => e.stopPropagation()} sx={{ mt: "auto" }}>
             <FormControl fullWidth size="small">
               <Select
                 value={task.status}
                 onChange={(e) => {
                   updateStatus(task._id, e.target.value);
                 }}
+                sx={{
+                  height: 32,
+                  fontSize: "0.78rem",
+                  fontWeight: 600,
+                  color: currentStatusColor,
+                  backgroundColor: alpha(currentStatusColor, 0.08),
+                  borderRadius: 1,
+                  transition: "background-color 0.15s ease",
+
+                  "& fieldset": {
+                    borderColor: "transparent",
+                  },
+
+                  "&:hover": {
+                    backgroundColor: alpha(currentStatusColor, 0.14),
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "transparent",
+                  },
+
+                  "&.Mui-focused fieldset": {
+                    borderColor: currentStatusColor,
+                  },
+
+                  "& .MuiSelect-select": {
+                    py: 0.5,
+                  },
+                  "& .MuiSelect-icon": {
+                    color: currentStatusColor,
+                  },
+                }}
               >
                 <MenuItem value="todo">To-Do</MenuItem>
-
                 <MenuItem value="in-progress">In Progress</MenuItem>
-
                 <MenuItem value="completed">Completed</MenuItem>
               </Select>
             </FormControl>

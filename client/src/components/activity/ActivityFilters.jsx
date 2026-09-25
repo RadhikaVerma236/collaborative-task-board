@@ -6,6 +6,7 @@ import {
   Select,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import FilterList from "@mui/icons-material/FilterList";
 
 function ActivityFilters({ tasks, selectedTask, onTaskChange }) {
@@ -24,16 +25,28 @@ function ActivityFilters({ tasks, selectedTask, onTaskChange }) {
         sx={{
           display: "flex",
           alignItems: "center",
-          gap: 1,
+          gap: 1.25,
           mb: 1.5,
         }}
       >
-        <FilterList
+        <Box
           sx={{
-            fontSize: 20,
-            color: "primary.main",
+            width: 30,
+            height: 30,
+            borderRadius: 1.5,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
           }}
-        />
+        >
+          <FilterList
+            sx={{
+              fontSize: 17,
+              color: "primary.main",
+            }}
+          />
+        </Box>
 
         <Typography
           variant="subtitle1"

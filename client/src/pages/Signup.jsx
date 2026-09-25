@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { useSnackbar } from "../context/SnackbarContext";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -26,6 +27,7 @@ function Signup() {
   });
 
   const navigate = useNavigate();
+  const { showSnackbar } = useSnackbar();
 
   const handleChange = (e) => {
     setFormData({
@@ -40,11 +42,14 @@ function Signup() {
     try {
       await axios.post("http://localhost:5000/api/auth/register", formData);
 
-      alert("Account created successfully!");
+      showSnackbar("Account created successfully.", "success");
 
       navigate("/login");
     } catch (error) {
-      alert(error.response?.data?.message || "Signup failed");
+      showSnackbar(
+      error.response?.data?.message || "Signup failed.",
+      "error"
+    );
     }
   };
 

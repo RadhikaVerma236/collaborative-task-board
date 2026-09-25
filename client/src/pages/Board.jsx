@@ -2,7 +2,10 @@ import { useEffect, useMemo, useCallback, useState } from "react";
 import { io } from "socket.io-client";
 import { DragDropContext } from "@hello-pangea/dnd";
 
-import { Box, Alert, Grid, Typography, Button } from "@mui/material";
+import { Box, Grid, Typography, Button } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
+import AddRoundedIcon from "@mui/icons-material/AddRounded";
+import SearchOffRoundedIcon from "@mui/icons-material/SearchOffRounded";
 
 import Navbar from "../components/Navbar";
 import TaskColumn from "../components/TaskColumn";
@@ -12,6 +15,9 @@ import TaskFilters from "../components/TaskFilters";
 import { useSnackbar } from "../context/SnackbarContext";
 
 function Board() {
+  const theme = useTheme();
+  const ACCENT = theme.palette.primary.main;
+
   const [tasks, setTasks] = useState([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
@@ -247,118 +253,160 @@ function Board() {
       <Navbar />
 
       <Box
-        sx={{
-          px: { xs: 2, md: 4 },
-          py: 4,
-        }}
+        sx={(theme) => ({
+          minHeight: "calc(100vh - 68px)",
+          backgroundColor: alpha(theme.palette.text.primary, 0.015),
+        })}
       >
-
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", sm: "center" },
-            flexDirection: { xs: "column", sm: "row" },
-            width: "100%",
-            mb: 4,
+            px: { xs: 2, md: 4 },
+            py: 4,
           }}
         >
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                letterSpacing: "-0.5px",
-              }}
-            >
-              Task Board
-            </Typography>
-
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.75 }}
-            >
-              Manage and track your team's tasks
-            </Typography>
-          </Box>
-
-          {isAdmin && (
-            <Button
-              variant="contained"
-              onClick={handleCreateTask}
-              sx={{
-                px: 2.5,
-                py: 1.1,
-              }}
-            >
-              + Create Task
-            </Button>
-          )}
-        </Box>
-
-        <TaskFilters
-          searchText={searchText}
-          setSearchText={setSearchText}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          priorityFilter={priorityFilter}
-          setPriorityFilter={setPriorityFilter}
-          assignedFilter={assignedFilter}
-          setAssignedFilter={setAssignedFilter}
-          assignedUsers={assignedUsers}
-          clearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-        />
-
-        {filteredTasks.length === 0 && (
-          <Alert
-            severity="info"
+          <Box
             sx={{
-              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+              flexDirection: { xs: "column", sm: "row" },
               width: "100%",
+              mb: 4,
             }}
           >
-            No tasks found matching your search or filters.
-          </Alert>
-        )}
-
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TaskColumn
-                title="To-Do"
-                tasks={todoTasks}
-                updateStatus={updateStatus}
-                onEdit={handleEditTask}
-                onDelete={handleTaskDeleted}
-                droppableId="todo"
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Box
+                sx={{
+                  width: 4,
+                  height: 34,
+                  borderRadius: 4,
+                  backgroundColor: ACCENT,
+                  flexShrink: 0,
+                }}
               />
-            </Grid>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TaskColumn
-                title="In Progress"
-                tasks={inProgressTasks}
-                updateStatus={updateStatus}
-                onEdit={handleEditTask}
-                onDelete={handleTaskDeleted}
-                droppableId="in-progress"
-              />
-            </Grid>
+              <Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 700,
+                    letterSpacing: "-0.5px",
+                  }}
+                >
+                  Task Board
+                </Typography>
 
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TaskColumn
-                title="Completed"
-                tasks={completedTasks}
-                updateStatus={updateStatus}
-                onEdit={handleEditTask}
-                onDelete={handleTaskDeleted}
-                droppableId="completed"
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 0.25 }}
+                >
+                  Manage and track your team's tasks
+                </Typography>
+              </Box>
+            </Box>
+
+            {isAdmin && (
+              <Button
+                variant="contained"
+                onClick={handleCreateTask}
+                startIcon={<AddRoundedIcon />}
+                disableElevation
+                sx={{
+                  px: 2.5,
+                  py: 1.1,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  backgroundColor: ACCENT,
+
+                  "&:hover": {
+                    backgroundColor: alpha(ACCENT, 0.88),
+                  },
+                }}
+              >
+                Create Task
+              </Button>
+            )}
+          </Box>
+
+          <TaskFilters
+            searchText={searchText}
+            setSearchText={setSearchText}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            priorityFilter={priorityFilter}
+            setPriorityFilter={setPriorityFilter}
+            assignedFilter={assignedFilter}
+            setAssignedFilter={setAssignedFilter}
+            assignedUsers={assignedUsers}
+            clearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+
+          {filteredTasks.length === 0 && (
+            <Box
+              sx={(theme) => ({
+                mb: 3,
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                px: 2.5,
+                py: 2,
+                borderRadius: 2,
+                border: "1px dashed",
+                borderColor: alpha(theme.palette.text.primary, 0.15),
+                backgroundColor: alpha(theme.palette.text.primary, 0.02),
+              })}
+            >
+              <SearchOffRoundedIcon
+                sx={{ color: "text.secondary", fontSize: 20 }}
               />
+
+              <Typography variant="body2" color="text.secondary">
+                No tasks found matching your search or filters.
+              </Typography>
+            </Box>
+          )}
+
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Grid container spacing={3.5}>
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TaskColumn
+                  title="To-Do"
+                  tasks={todoTasks}
+                  updateStatus={updateStatus}
+                  onEdit={handleEditTask}
+                  onDelete={handleTaskDeleted}
+                  droppableId="todo"
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TaskColumn
+                  title="In Progress"
+                  tasks={inProgressTasks}
+                  updateStatus={updateStatus}
+                  onEdit={handleEditTask}
+                  onDelete={handleTaskDeleted}
+                  droppableId="in-progress"
+                />
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 4 }}>
+                <TaskColumn
+                  title="Completed"
+                  tasks={completedTasks}
+                  updateStatus={updateStatus}
+                  onEdit={handleEditTask}
+                  onDelete={handleTaskDeleted}
+                  droppableId="completed"
+                />
+              </Grid>
             </Grid>
-          </Grid>
-        </DragDropContext>
+          </DragDropContext>
+        </Box>
       </Box>
 
       <CreateTaskModal

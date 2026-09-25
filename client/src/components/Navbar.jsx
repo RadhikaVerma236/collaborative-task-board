@@ -1,4 +1,10 @@
-import { useState } from "react";
+import {
+  useState,
+  useRef,
+  useLayoutEffect,
+  useEffect,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -14,10 +20,11 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 
-import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import PersonIcon from "@mui/icons-material/Person";
 import EmailIcon from "@mui/icons-material/Email";
 import BadgeIcon from "@mui/icons-material/Badge";
@@ -25,9 +32,18 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
+// Add this to your index.html <head> (or global CSS @import) once,
+// to load the wordmark's display typeface:
+// <link rel="preconnect" href="https://fonts.googleapis.com">
+// <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true">
+// <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+const WORDMARK_FONT = "'Fraunces', 'Georgia', serif";
+
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const ACCENT = theme.palette.primary.main;
 
   const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
   const [profileAnchor, setProfileAnchor] = useState(null);
@@ -92,16 +108,49 @@ function Navbar() {
     },
   ];
 
+  // --- Sliding active-tab indicator ---
+  const navContainerRef = useRef(null);
+  const navButtonRefs = useRef({});
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const recalcIndicator = useCallback(() => {
+    const activeItem = navItems.find((item) => item.active);
+    const node = activeItem && navButtonRefs.current[activeItem.path];
+    const container = navContainerRef.current;
+
+    if (node && container) {
+      const nodeRect = node.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      setIndicator({
+        left: nodeRect.left - containerRect.left,
+        width: nodeRect.width,
+        opacity: 1,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  useLayoutEffect(() => {
+    recalcIndicator();
+  }, [recalcIndicator]);
+
+  useEffect(() => {
+    window.addEventListener("resize", recalcIndicator);
+    return () => window.removeEventListener("resize", recalcIndicator);
+  }, [recalcIndicator]);
+
   return (
     <AppBar
       position="sticky"
       elevation={0}
-      sx={{
-        backgroundColor: "background.paper",
+      sx={(theme) => ({
+        backgroundColor: alpha(theme.palette.background.paper, 0.75),
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
         color: "text.primary",
         borderBottom: "1px solid",
-        borderColor: "divider",
-      }}
+        borderColor: alpha(theme.palette.text.primary, 0.08),
+      })}
     >
       <Toolbar
         sx={{
@@ -117,35 +166,36 @@ function Navbar() {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.2,
+            gap: 1.4,
             cursor: "pointer",
             flexShrink: 0,
           }}
         >
+          {/* Abstract mark: three columns, echoing the board itself */}
           <Box
-            sx={{
-              width: 36,
-              height: 36,
-              borderRadius: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "primary.main",
-              color: "#FFFFFF",
-              fontWeight: 800,
-              fontSize: 16,
-              boxShadow: "0 4px 10px rgba(79, 70, 229, 0.2)",
-            }}
+            component="svg"
+            viewBox="0 0 28 24"
+            sx={{ width: 26, height: 22, flexShrink: 0 }}
           >
-            T
+            <rect x="1" y="10" width="6" height="14" rx="3" fill={ACCENT} />
+            <rect x="11" y="4" width="6" height="20" rx="3" fill={ACCENT} />
+            <rect
+              x="21"
+              y="13"
+              width="6"
+              height="11"
+              rx="3"
+              fill={alpha(ACCENT, 0.4)}
+            />
           </Box>
 
           <Typography
             variant="h6"
             sx={{
-              fontWeight: 750,
+              fontFamily: WORDMARK_FONT,
+              fontWeight: 600,
               color: "text.primary",
-              letterSpacing: "-0.4px",
+              letterSpacing: "-0.3px",
               display: { xs: "none", sm: "block" },
             }}
           >
@@ -155,7 +205,8 @@ function Navbar() {
 
         {/* Desktop Navigation */}
         <Box
-          sx={{
+          ref={navContainerRef}
+          sx={(theme) => ({
             display: { xs: "none", md: "flex" },
             alignItems: "center",
             position: "absolute",
@@ -164,29 +215,48 @@ function Navbar() {
             p: 0.5,
             gap: 0.5,
             borderRadius: 2.5,
-            backgroundColor: "#F8FAFC",
-            border: "1px solid",
-            borderColor: "divider",
-          }}
+            backgroundColor: alpha(theme.palette.text.primary, 0.03),
+          })}
         >
+          {/* Sliding indicator, positioned behind the active button */}
+          <Box
+            sx={(theme) => ({
+              position: "absolute",
+              top: 4,
+              bottom: 4,
+              left: indicator.left,
+              width: indicator.width,
+              opacity: indicator.opacity,
+              borderRadius: 2,
+              backgroundColor: "background.paper",
+              boxShadow: `0 1px 3px ${alpha(theme.palette.common.black, 0.1)}`,
+              transition:
+                "left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease",
+              zIndex: 0,
+            })}
+          />
+
           {navItems.map((item) => (
             <Button
               key={item.path}
+              ref={(el) => {
+                navButtonRefs.current[item.path] = el;
+              }}
               color="inherit"
               onClick={() => navigate(item.path)}
               startIcon={item.icon}
-              sx={{
+              sx={(theme) => ({
+                position: "relative",
+                zIndex: 1,
                 minHeight: 38,
                 px: 1.8,
                 borderRadius: 2,
                 textTransform: "none",
                 fontSize: 14,
-                color: item.active ? "primary.main" : "text.secondary",
-                backgroundColor: item.active ? "#FFFFFF" : "transparent",
+                color: item.active ? ACCENT : "text.secondary",
+                backgroundColor: "transparent",
                 fontWeight: item.active ? 700 : 500,
-                boxShadow: item.active
-                  ? "0 1px 3px rgba(15, 23, 42, 0.08)"
-                  : "none",
+                boxShadow: "none",
 
                 "& .MuiButton-startIcon": {
                   mr: 0.7,
@@ -194,10 +264,10 @@ function Navbar() {
 
                 "&:hover": {
                   backgroundColor: item.active
-                    ? "#FFFFFF"
-                    : "rgba(15, 23, 42, 0.04)",
+                    ? "transparent"
+                    : alpha(theme.palette.text.primary, 0.04),
                 },
-              }}
+              })}
             >
               {item.label}
             </Button>
@@ -232,13 +302,15 @@ function Navbar() {
           }}
         >
           <Avatar
-            sx={{
+            sx={(theme) => ({
               width: 36,
               height: 36,
-              backgroundColor: "primary.main",
+              background: `linear-gradient(135deg, ${ACCENT}, ${alpha(ACCENT, 0.65)})`,
+              color: "#FFFFFF",
               fontSize: "0.9rem",
               fontWeight: 700,
-            }}
+              boxShadow: `0 0 0 2px ${theme.palette.background.paper}, 0 0 0 3.5px ${alpha(ACCENT, 0.35)}`,
+            })}
           >
             {getInitial()}
           </Avatar>
@@ -275,6 +347,10 @@ function Navbar() {
               fontSize: 19,
               color: "text.secondary",
               display: { xs: "none", lg: "block" },
+              transition: "transform 0.2s ease",
+              transform: Boolean(profileAnchor)
+                ? "rotate(180deg)"
+                : "rotate(0deg)",
             }}
           />
         </Button>
@@ -294,15 +370,15 @@ function Navbar() {
           }}
           slotProps={{
             paper: {
-              sx: {
+              sx: (theme) => ({
                 mt: 1,
                 minWidth: 270,
                 borderRadius: 2.5,
                 border: "1px solid",
                 borderColor: "divider",
-                boxShadow: "0 12px 30px rgba(15, 23, 42, 0.12)",
+                boxShadow: `0 12px 30px ${alpha(theme.palette.common.black, 0.14)}`,
                 overflow: "hidden",
-              },
+              }),
             },
           }}
         >
@@ -320,7 +396,8 @@ function Navbar() {
               sx={{
                 width: 42,
                 height: 42,
-                backgroundColor: "primary.main",
+                background: `linear-gradient(135deg, ${ACCENT}, ${alpha(ACCENT, 0.65)})`,
+                color: "#FFFFFF",
                 fontWeight: 700,
               }}
             >
@@ -424,14 +501,14 @@ function Navbar() {
           }}
           slotProps={{
             paper: {
-              sx: {
+              sx: (theme) => ({
                 mt: 1,
                 minWidth: 210,
                 borderRadius: 2.5,
                 border: "1px solid",
                 borderColor: "divider",
-                boxShadow: "0 12px 30px rgba(15, 23, 42, 0.12)",
-              },
+                boxShadow: `0 12px 30px ${alpha(theme.palette.common.black, 0.14)}`,
+              }),
             },
           }}
         >
@@ -445,20 +522,20 @@ function Navbar() {
                 gap: 1,
 
                 "&.Mui-selected": {
-                  backgroundColor: "rgba(79, 70, 229, 0.08)",
-                  color: "primary.main",
+                  backgroundColor: alpha(ACCENT, 0.08),
+                  color: ACCENT,
                   fontWeight: 700,
                 },
 
                 "&.Mui-selected:hover": {
-                  backgroundColor: "rgba(79, 70, 229, 0.12)",
+                  backgroundColor: alpha(ACCENT, 0.12),
                 },
               }}
             >
               <ListItemIcon
                 sx={{
                   minWidth: 34,
-                  color: item.active ? "primary.main" : "text.secondary",
+                  color: item.active ? ACCENT : "text.secondary",
                 }}
               >
                 {item.icon}

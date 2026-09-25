@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Box, Stack, Typography, Button } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import ArrowBackRounded from "@mui/icons-material/ArrowBackRounded";
+import ArrowForwardRounded from "@mui/icons-material/ArrowForwardRounded";
 
 import ActivityHeader from "../components/activity/ActivityHeader";
 import ActivitySummary from "../components/activity/ActivitySummary";
@@ -120,60 +123,82 @@ const [todayActivities, setTodayActivities] = useState(0);
 
   return (
     <>
-    <Navbar />
-    <Box
-      sx={{
-        px: { xs: 2, md: 4 },
-        py: 4,
-      }}
-    >
-      <ActivityHeader />
+      <Navbar />
 
-      <ActivitySummary
-        totalActivities={totalActivities}
-        todayActivities={todayActivities}
-      />
-
-      <ActivityFilters
-      tasks={tasks}
-      selectedTask={selectedTask}
-      onTaskChange={setSelectedTask}
-    />
-
-      <ActivityList
-        logs={logs}
-        loading={loading}
-      />
-
-      <Stack
-        direction="row"
-        justifyContent="center"
-        alignItems="center"
-        spacing={3}
-        sx={{ mt: 4 }}
+      <Box
+        sx={(theme) => ({
+          minHeight: "calc(100vh - 68px)",
+          backgroundColor: alpha(theme.palette.text.primary, 0.015),
+        })}
       >
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={handlePrevious}
-          disabled={page === 1 || loading}
+        <Box
+          sx={{
+            px: { xs: 2, md: 4 },
+            py: 4,
+          }}
         >
-          ← Previous
-        </Button>
+          <ActivityHeader />
 
-        <Typography>
-          Page <strong>{page}</strong>
-        </Typography>
+          <ActivitySummary
+            totalActivities={totalActivities}
+            todayActivities={todayActivities}
+          />
 
-        <Button
-          variant="contained"
-          onClick={handleNext}
-          disabled={!hasMore || loading}
-        >
-          {loading ? "Loading..." : "Next →"}
-        </Button>
-      </Stack>
-    </Box>
+          <ActivityFilters
+            tasks={tasks}
+            selectedTask={selectedTask}
+            onTaskChange={setSelectedTask}
+          />
+
+          <ActivityList logs={logs} loading={loading} />
+
+          <Stack
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            spacing={2.5}
+            sx={{ mt: 4 }}
+          >
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handlePrevious}
+              disabled={page === 1 || loading}
+              startIcon={<ArrowBackRounded fontSize="small" />}
+              sx={{ borderRadius: 2 }}
+            >
+              Previous
+            </Button>
+
+            <Box
+              sx={(theme) => ({
+                px: 1.75,
+                py: 0.5,
+                borderRadius: 5,
+                backgroundColor: alpha(theme.palette.primary.main, 0.08),
+              })}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 700, color: "primary.main" }}
+              >
+                Page {page}
+              </Typography>
+            </Box>
+
+            <Button
+              variant="contained"
+              disableElevation
+              onClick={handleNext}
+              disabled={!hasMore || loading}
+              endIcon={!loading ? <ArrowForwardRounded fontSize="small" /> : null}
+              sx={{ borderRadius: 2 }}
+            >
+              {loading ? "Loading…" : "Next"}
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
     </>
   );
 }

@@ -5,6 +5,7 @@ import {
   CircularProgress,
   Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 
 import Navbar from "../components/Navbar";
 import TaskStatCard from "../components/TaskStatCard";
@@ -139,85 +140,115 @@ const inProgressRate =
       <Navbar />
 
       <Box
-        sx={{
-          px: { xs: 2, sm: 3, md: 4 },
-          py: { xs: 3, md: 4 },
-          backgroundColor: "background.default",
-          minHeight: "calc(100vh - 64px)",
-        }}
+        sx={(theme) => ({
+          minHeight: "calc(100vh - 68px)",
+          backgroundColor: alpha(theme.palette.text.primary, 0.015),
+        })}
       >
-        {/* Page Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              mb: 0.5,
-            }}
-          >
-            My Tasks
-          </Typography>
-
-          <Typography color="text.secondary">
-            Tasks assigned to you
-          </Typography>
-        </Box>
-
-        {/* Loading */}
-        {loading && (
+        <Box
+          sx={{
+            px: { xs: 2, sm: 3, md: 4 },
+            py: { xs: 3, md: 4 },
+          }}
+        >
+          {/* Page Header */}
           <Box
             sx={{
               display: "flex",
-              justifyContent: "center",
-              py: 6,
+              alignItems: "center",
+              gap: 1.5,
+              mb: 4,
             }}
           >
-            <CircularProgress />
-          </Box>
-        )}
-
-        {/* Error */}
-        {error && (
-          <Alert severity="error">
-            {error}
-          </Alert>
-        )}
-
-        {/* Content */}
-        {!loading && !error && (
-          <>
-            {/* Stats */}
             <Box
               sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(4, 1fr)",
-                },
-                gap: 2.5,
-                width: "100%",
-                mb: 4,
+                width: 4,
+                height: 34,
+                borderRadius: 4,
+                backgroundColor: "primary.main",
+                flexShrink: 0,
+              }}
+            />
+
+            <Box>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  mb: 0.25,
+                }}
+              >
+                My Tasks
+              </Typography>
+
+              <Typography color="text.secondary">
+                Tasks assigned to you
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* Loading */}
+          {loading && (
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1.5,
+                py: 6,
               }}
             >
-              {stats.map((stat) => (
-                <TaskStatCard
-                  key={stat.title}
-                  title={stat.title}
-                  value={stat.value}
-                  subtitle={stat.subtitle}
-                  detail={stat.detail}
-                />
-              ))}
-            </Box>
+              <CircularProgress size={28} />
 
-            {/* Task Table */}
-            <MyTaskTable
-              tasks={tasks}
-              onTaskClick={handleTaskClick}
-            />
-          </>
-        )}
+              <Typography variant="body2" color="text.secondary">
+                Loading your tasks…
+              </Typography>
+            </Box>
+          )}
+
+          {/* Error */}
+          {error && (
+            <Alert severity="error" sx={{ borderRadius: 2, mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Content */}
+          {!loading && !error && (
+            <>
+              {/* Stats */}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: {
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(4, 1fr)",
+                  },
+                  gap: 2.5,
+                  width: "100%",
+                  mb: 4,
+                }}
+              >
+                {stats.map((stat) => (
+                  <TaskStatCard
+                    key={stat.title}
+                    title={stat.title}
+                    value={stat.value}
+                    subtitle={stat.subtitle}
+                    detail={stat.detail}
+                  />
+                ))}
+              </Box>
+
+              {/* Task Table */}
+              <MyTaskTable
+                tasks={tasks}
+                onTaskClick={handleTaskClick}
+              />
+            </>
+          )}
+        </Box>
       </Box>
 
       {/* Task Details */}

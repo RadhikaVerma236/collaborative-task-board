@@ -11,8 +11,10 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { AccessTime, Close, Edit, Delete } from "@mui/icons-material";
-import { useTheme } from "@mui/material/styles";
+import { alpha, useTheme } from "@mui/material/styles";
+import Close from "@mui/icons-material/Close";
+import Edit from "@mui/icons-material/Edit";
+import Delete from "@mui/icons-material/Delete";
 import { deleteTask } from "../services/taskService";
 import TaskActivity from "./TaskActivity";
 import TaskTimeline from "./TaskTimeline";
@@ -177,7 +179,7 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
           sx={{
             px: { xs: 2.5, sm: 4 },
             py: 3,
-            backgroundColor: "#F8FAFC",
+            backgroundColor: alpha(theme.palette.text.primary, 0.02),
           }}
         >
           {task ? (
@@ -233,8 +235,15 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
         onClose={() => setDeleteConfirmOpen(false)}
         maxWidth="xs"
         fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              borderRadius: 3,
+            },
+          },
+        }}
       >
-        <DialogTitle>Delete Task?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>Delete Task?</DialogTitle>
 
         <DialogContent>
           <Typography color="text.secondary">
@@ -243,10 +252,23 @@ function TaskDetailsModal({ open, task, onClose, onEdit, onDelete }) {
           </Typography>
         </DialogContent>
 
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => setDeleteConfirmOpen(false)}
+            sx={{ borderRadius: 2 }}
+          >
+            Cancel
+          </Button>
 
-          <Button variant="contained" color="error" onClick={handleDeleteTask}>
+          <Button
+            variant="contained"
+            color="error"
+            disableElevation
+            onClick={handleDeleteTask}
+            sx={{ borderRadius: 2 }}
+          >
             Delete
           </Button>
         </DialogActions>

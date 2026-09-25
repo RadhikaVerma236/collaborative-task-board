@@ -1,7 +1,11 @@
 import { Box, Card, CardContent, Typography } from "@mui/material";
-import { Timeline, Today } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import Timeline from "@mui/icons-material/Timeline";
+import Today from "@mui/icons-material/Today";
 
 function ActivitySummary({ totalActivities, todayActivities }) {
+  const theme = useTheme();
+
   const summaryItems = [
     {
       label: "Total Activities",
@@ -28,7 +32,15 @@ function ActivitySummary({ totalActivities, todayActivities }) {
       }}
     >
       {summaryItems.map((item) => (
-        <Card key={item.label}>
+        <Card
+          key={item.label}
+          sx={{
+            border: "1px solid",
+            borderColor: "divider",
+            boxShadow: "none",
+            backgroundColor: "background.paper",
+          }}
+        >
           <CardContent
             sx={{
               display: "flex",
@@ -46,7 +58,7 @@ function ActivitySummary({ totalActivities, todayActivities }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "primary.main",
-                color: "#FFFFFF",
+                color: theme.palette.common.white,
               }}
             >
               {item.icon}

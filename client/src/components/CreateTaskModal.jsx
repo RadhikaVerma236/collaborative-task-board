@@ -10,6 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { alpha, useTheme } from "@mui/material/styles";
 import Assignment from "@mui/icons-material/Assignment";
 import Person from "@mui/icons-material/Person";
 import TaskModalHeader from "./TaskModalHeader";
@@ -19,6 +20,8 @@ import { createTask, updateTask } from "../services/taskService";
 import { useSnackbar } from "../context/SnackbarContext";
 
 function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
+  const theme = useTheme();
+  const ACCENT = theme.palette.primary.main;
   const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState({
     title: "",
@@ -90,8 +93,6 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
 
       console.log("UPDATED TASK RESPONSE:", response.data.task);
 
-      alert(task ? "Task updated successfully!" : "Task created successfully!");
-
       setFormData({
         title: "",
         description: "",
@@ -147,11 +148,11 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
 
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent
-          sx={{
+          sx={(theme) => ({
             px: { xs: 2.5, sm: 5 },
             py: 4,
-            backgroundColor: "#F8FAFC",
-          }}
+            backgroundColor: alpha(theme.palette.text.primary, 0.02),
+          })}
         >
           <Stack spacing={3}>
             {/* Task Details */}
@@ -160,16 +161,28 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
+                  gap: 1.25,
                   mb: 2,
                 }}
               >
-                <Assignment
+                <Box
                   sx={{
-                    color: "primary.main",
-                    fontSize: 21,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: alpha(ACCENT, 0.1),
                   }}
-                />
+                >
+                  <Assignment
+                    sx={{
+                      color: ACCENT,
+                      fontSize: 17,
+                    }}
+                  />
+                </Box>
 
                 <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   Task Details
@@ -179,7 +192,7 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
               <Box
                 sx={{
                   p: { xs: 2, sm: 2.5 },
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   border: "1px solid",
                   borderColor: "divider",
                   borderRadius: 2,
@@ -200,16 +213,28 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 1,
+                  gap: 1.25,
                   mb: 2,
                 }}
               >
-                <Person
+                <Box
                   sx={{
-                    color: "primary.main",
-                    fontSize: 21,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 1.5,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: alpha(ACCENT, 0.1),
                   }}
-                />
+                >
+                  <Person
+                    sx={{
+                      color: ACCENT,
+                      fontSize: 17,
+                    }}
+                  />
+                </Box>
 
                 <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
                   Assignment
@@ -219,7 +244,7 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
               <Box
                 sx={{
                   p: { xs: 2, sm: 2.5 },
-                  backgroundColor: "#FFFFFF",
+                  backgroundColor: "background.paper",
                   border: "1px solid",
                   borderColor: "divider",
                   borderRadius: 2,
@@ -239,7 +264,7 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
           sx={{
             px: { xs: 2.5, sm: 4 },
             py: 2.5,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "background.paper",
             borderTop: "1px solid",
             borderColor: "divider",
             gap: 1.5,
@@ -252,12 +277,30 @@ function CreateTaskModal({ open, onClose, onTaskCreated, task }) {
             onClick={handleClose}
             sx={{
               minWidth: 100,
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: 2,
             }}
           >
             Cancel
           </Button>
 
-          <Button type="submit" variant="contained" sx={{ minWidth: 120 }}>
+          <Button
+            type="submit"
+            variant="contained"
+            disableElevation
+            sx={{
+              minWidth: 120,
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: 2,
+              backgroundColor: ACCENT,
+
+              "&:hover": {
+                backgroundColor: alpha(ACCENT, 0.88),
+              },
+            }}
+          >
             {task ? "Save Changes" : "Create Task"}
           </Button>
         </DialogActions>

@@ -5,7 +5,7 @@ import {
   CheckCircle,
 } from "@mui/icons-material";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
-import { useTheme } from "@mui/material/styles";
+import { useTheme, alpha } from "@mui/material/styles";
 import TaskCard from "./TaskCard";
 import { useMemo } from "react";
 
@@ -19,27 +19,25 @@ function TaskColumn({
 }) {
   const theme = useTheme();
 
-  const columnStyles = useMemo( () => ({
-    "To-Do": {
-      color: theme.palette.status.todo,
-      background: theme.palette.status.todoBackground,
-      icon: <RadioButtonUnchecked fontSize="small" />,
-    },
+  const columnStyles = useMemo(
+    () => ({
+      "To-Do": {
+        color: theme.palette.status.todo,
+        icon: <RadioButtonUnchecked fontSize="small" />,
+      },
 
-    "In Progress": {
-      color: theme.palette.status.inProgress,
-      background: theme.palette.status.inProgressBackground,
-      icon: <AccessTime fontSize="small" />,
-    },
+      "In Progress": {
+        color: theme.palette.status.inProgress,
+        icon: <AccessTime fontSize="small" />,
+      },
 
-    Completed: {
-      color: theme.palette.status.completed,
-      background: theme.palette.status.completedBackground,
-      icon: <CheckCircle fontSize="small" />,
-    },
-  }),
-  [theme],
-);
+      Completed: {
+        color: theme.palette.status.completed,
+        icon: <CheckCircle fontSize="small" />,
+      },
+    }),
+    [theme],
+  );
 
   const currentStyle = columnStyles[title];
 
@@ -51,11 +49,12 @@ function TaskColumn({
         border: "1px solid",
         borderColor: "divider",
         borderTop: `4px solid ${currentStyle.color}`,
-        backgroundColor: currentStyle.background,
-        transition: "box-shadow 0.2s ease, transform 0.2s ease",
+        backgroundColor: alpha(theme.palette.text.primary, 0.025),
+        boxShadow: "none",
+        transition: "box-shadow 0.2s ease",
 
         "&:hover": {
-          boxShadow: 3,
+          boxShadow: `0 8px 24px -12px ${alpha(theme.palette.common.black, 0.3)}`,
         },
       }}
     >
@@ -84,7 +83,7 @@ function TaskColumn({
                 alignItems: "center",
                 justifyContent: "center",
                 color: currentStyle.color,
-                backgroundColor: "#FFFFFF",
+                backgroundColor: alpha(currentStyle.color, 0.12),
               }}
             >
               {currentStyle.icon}
@@ -104,9 +103,9 @@ function TaskColumn({
             label={tasks.length}
             size="small"
             sx={{
-              backgroundColor: currentStyle.color,
-              color: "#FFFFFF",
-              fontWeight: 600,
+              backgroundColor: alpha(currentStyle.color, 0.12),
+              color: currentStyle.color,
+              fontWeight: 700,
               minWidth: 30,
             }}
           />
@@ -122,7 +121,7 @@ function TaskColumn({
                 borderRadius: 2,
                 transition: "background-color 0.2s ease",
                 backgroundColor: snapshot.isDraggingOver
-                  ? "rgba(79, 70, 229, 0.06)"
+                  ? alpha(currentStyle.color, 0.06)
                   : "transparent",
               }}
             >
@@ -138,6 +137,23 @@ function TaskColumn({
                     px: 2,
                   }}
                 >
+                  <Box
+                    sx={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: alpha(currentStyle.color, 0.5),
+                      backgroundColor: alpha(currentStyle.color, 0.08),
+                      mb: 1.5,
+                      "& svg": { fontSize: 22 },
+                    }}
+                  >
+                    {currentStyle.icon}
+                  </Box>
+
                   <Typography
                     variant="body1"
                     sx={{
